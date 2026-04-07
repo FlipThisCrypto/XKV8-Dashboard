@@ -1,0 +1,42 @@
+{
+  "target_address": "xch13slrqasw7wugz686nwdjnshsawnr0f9un7sw8afqmrdp80tvm8estkna95",
+  "cat_tail_hash": "f09c8d630a0a64eb4633c0933e0ca131e646cebb384cfc4f6718bad80859b5e8",
+  "genesis_height": 8521888,
+  "dashboard_port": 9092,
+  "balance_check_interval": 30,
+  "miners": [
+    {
+      "name": "CHEECH",
+      "host": "cheech",
+      "trait": "beard",
+      "action": "pickaxe",
+      "shirt_color": "#3366cc",
+      "helmet_color": "#e8922a",
+      "fee_mojos": 0,
+      "node_type": "public",
+      "instances": 1
+    },
+    {
+      "name": "CHONG",
+      "host": "chong",
+      "trait": "mustache",
+      "action": "shovel",
+      "shirt_color": "#2855a8",
+      "helmet_color": "#a0a0a0",
+      "fee_mojos": 40000000,
+      "node_type": "localhost",
+      "instances": 1
+    },
+    {
+      "name": "SMOKEY",
+      "host": "smokey",
+      "trait": "smudge",
+      "action": "wheelbarrow",
+      "shirt_color": "#2a6640",
+      "helmet_color": "#b8a830",
+      "fee_mojos": 0,
+      "node_type": "public",
+      "instances": 1
+    }
+  ]
+}

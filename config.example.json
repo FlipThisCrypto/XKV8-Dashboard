@@ -1,0 +1,20 @@
+{
+  "target_address": "xch1_YOUR_ADDRESS_HERE",
+  "cat_tail_hash": "f09c8d630a0a64eb4633c0933e0ca131e646cebb384cfc4f6718bad80859b5e8",
+  "genesis_height": 8521888,
+  "dashboard_port": 8092,
+  "balance_check_interval": 30,
+  "miners": [
+    {
+      "name": "Miner-1",
+      "host": "my-server",
+      "trait": "beard",
+      "action": "pickaxe",
+      "shirt_color": "#3366cc",
+      "helmet_color": "#e8922a",
+      "fee_mojos": 0,
+      "node_type": "public",
+      "instances": 1
+    }
+  ]
+}

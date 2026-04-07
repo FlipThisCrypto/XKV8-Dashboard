@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XKV8 Miner Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg-deep:#07080f;--border-glow:rgba(255,170,50,0.25);--border-subtle:rgba(255,255,255,0.06);--accent-gold:#f5a623;--accent-fire:#ff6b2b;--accent-emerald:#2bff88;--accent-cyan:#22d3ee;--text-primary:#eee;--text-muted:#7a8199;--text-dim:#3e4460;--glass-bg:rgba(255,255,255,0.03);--glass-border:rgba(255,255,255,0.08)}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Chakra Petch',sans-serif;background:var(--bg-deep);color:var(--text-primary);min-height:100vh;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;z-index:9999;pointer-events:none;opacity:0.025;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+.bg-atmosphere{position:fixed;inset:0;z-index:0;overflow:hidden}
+.bg-atmosphere::before{content:'';position:absolute;width:800px;height:800px;top:-200px;right:-200px;background:radial-gradient(circle,rgba(245,166,35,0.06) 0%,transparent 70%);animation:drift 20s ease-in-out infinite}
+.bg-atmosphere::after{content:'';position:absolute;width:600px;height:600px;bottom:-100px;left:-100px;background:radial-gradient(circle,rgba(43,255,136,0.04) 0%,transparent 70%);animation:drift 25s ease-in-out infinite reverse}
+@keyframes drift{0%,100%{transform:translate(0,0)}50%{transform:translate(40px,-30px)}}
+.grid-bg{position:fixed;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,0.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,0.015) 1px,transparent 1px);background-size:60px 60px;mask-image:radial-gradient(ellipse at center,black 30%,transparent 80%)}
+.container{position:relative;z-index:1;max-width:1440px;margin:0 auto;padding:24px 28px 40px}
+.header{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;padding-bottom:20px;border-bottom:1px solid var(--border-subtle)}
+.header-left{display:flex;align-items:center;gap:18px}
+.logo-mark{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--accent-gold),var(--accent-fire));display:flex;align-items:center;justify-content:center;font-size:24px;box-shadow:0 0 30px rgba(245,166,35,0.25);position:relative}
+.logo-mark::after{content:'';position:absolute;inset:-2px;border-radius:16px;background:linear-gradient(135deg,var(--accent-gold),var(--accent-fire));opacity:0.3;filter:blur(8px);z-index:-1}
+.title-group h1{font-family:'Orbitron',sans-serif;font-size:1.6rem;font-weight:900;letter-spacing:3px;background:linear-gradient(135deg,#fff 30%,var(--accent-gold));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.title-group .subtitle{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:var(--text-muted);letter-spacing:2px;margin-top:2px}
+.header-status{display:flex;align-items:center;gap:24px}
+.live-badge{display:flex;align-items:center;gap:8px;padding:6px 14px;border-radius:20px;background:rgba(43,255,136,0.08);border:1px solid rgba(43,255,136,0.2);font-family:'JetBrains Mono',monospace;font-size:0.72rem;font-weight:500;color:var(--accent-emerald);letter-spacing:1.5px}
+.live-dot{width:8px;height:8px;border-radius:50%;background:var(--accent-emerald);animation:pulse-dot 2s ease-in-out infinite;box-shadow:0 0 8px var(--accent-emerald)}
+.live-badge.offline{background:rgba(255,107,43,0.08);border-color:rgba(255,107,43,0.2);color:var(--accent-fire)}
+.live-badge.offline .live-dot{background:var(--accent-fire);box-shadow:0 0 8px var(--accent-fire);animation:none}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:0.4;transform:scale(0.8)}}
+.uptime-display{font-family:'JetBrains Mono',monospace;font-size:0.75rem;color:var(--text-muted)}
+.stats-row{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}
+.stat-card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:16px;padding:18px 20px;position:relative;overflow:hidden;backdrop-filter:blur(12px);transition:border-color 0.3s,transform 0.2s}
+.stat-card:hover{border-color:var(--border-glow);transform:translateY(-2px)}
+.stat-card .label{font-size:0.7rem;color:var(--text-muted);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px}
+.stat-card .value{font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:700;color:#fff;line-height:1}
+.stat-card .value.gold{color:var(--accent-gold)}.stat-card .value.emerald{color:var(--accent-emerald)}.stat-card .value.fire{color:var(--accent-fire)}.stat-card .value.cyan{color:var(--accent-cyan)}
+.stat-card .footer{margin-top:6px;font-family:'JetBrains Mono',monospace;font-size:0.62rem;color:var(--text-dim)}
+.stat-card .icon-bg{position:absolute;top:12px;right:14px;font-size:1.5rem;opacity:0.15}
+.canvas-card{position:relative;min-height:340px;background:linear-gradient(180deg,rgba(7,8,15,0.9),rgba(14,18,30,0.6));border:1px solid var(--glass-border);border-radius:16px;overflow:hidden;margin-bottom:20px}
+.canvas-card canvas{display:block;width:100%;height:340px}
+.canvas-overlay{position:absolute;bottom:0;left:0;right:0;height:50px;background:linear-gradient(transparent,rgba(7,8,15,0.7));pointer-events:none}
+.main-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--glass-bg);border:1px solid var(--glass-border);border-radius:16px;padding:0;overflow:hidden;backdrop-filter:blur(12px)}
+.card-header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--border-subtle)}
+.card-header h2{font-family:'Chakra Petch',sans-serif;font-size:0.82rem;font-weight:600;letter-spacing:1.5px;text-transform:uppercase;color:var(--text-muted)}
+.card-header .badge{font-family:'JetBrains Mono',monospace;font-size:0.62rem;padding:3px 8px;border-radius:6px;background:rgba(245,166,35,0.1);color:var(--accent-gold);border:1px solid rgba(245,166,35,0.15)}
+.card-body{padding:18px 20px}
+.detail-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border-subtle)}
+.detail-row:last-child{border-bottom:none}
+.detail-row .dl{font-size:0.76rem;color:var(--text-muted)}
+.detail-row .dv{font-family:'JetBrains Mono',monospace;font-size:0.8rem;color:#ddd;text-align:right}
+.detail-row .dv.highlight{color:var(--accent-gold);font-weight:700}
+.address-truncate{max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block}
+.log-list{max-height:300px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(255,255,255,0.1) transparent}
+.log-item{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-subtle);animation:fadeSlideIn 0.3s ease-out}
+.log-item:last-child{border-bottom:none}
+@keyframes fadeSlideIn{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.log-dot{width:6px;height:6px;border-radius:50%;background:var(--accent-gold);margin-top:6px;flex-shrink:0}
+.log-dot.success{background:var(--accent-emerald)}.log-dot.error{background:var(--accent-fire)}
+.log-content{flex:1;min-width:0}
+.log-msg{font-family:'JetBrains Mono',monospace;font-size:0.7rem;color:#bbb;word-break:break-all;line-height:1.5}
+.log-time{font-family:'JetBrains Mono',monospace;font-size:0.58rem;color:var(--text-dim);margin-top:2px}
+.particle-field{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.particle{position:absolute;width:2px;height:2px;background:var(--accent-gold);border-radius:50%;opacity:0;animation:float-up linear infinite}
+@keyframes float-up{0%{opacity:0;transform:translateY(0) scale(0.5)}10%{opacity:0.6}90%{opacity:0.2}100%{opacity:0;transform:translateY(-100vh) scale(0)}}
+@keyframes winFlash{0%{box-shadow:0 0 0 0 rgba(245,166,35,0.5)}50%{box-shadow:0 0 40px 10px rgba(245,166,35,0.3)}100%{box-shadow:0 0 0 0 rgba(245,166,35,0)}}
+.win-flash{animation:winFlash 0.8s ease-out}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:rgba(255,255,255,0.1);border-radius:4px}
+@media(max-width:1024px){.stats-row{grid-template-columns:repeat(2,1fr)}.main-grid{grid-template-columns:1fr}}
+@media(max-width:600px){.stats-row{grid-template-columns:1fr}.header{flex-direction:column;gap:14px;text-align:center}.header-left{justify-content:center}.header-status{justify-content:center}.container{padding:16px}.title-group h1{font-size:1.2rem}}
+</style>
+</head>
+<body>
+<div class="bg-atmosphere"></div>
+<div class="grid-bg"></div>
+<div class="particle-field" id="particleField"></div>
+<div class="container">
+    <header class="header">
+        <div class="header-left">
+            <div class="logo-mark">⛏️</div>
+            <div class="title-group"><h1>XKV8 MINER</h1><div class="subtitle" id="subtitleText">FLEET OPERATIONS</div></div>
+        </div>
+        <div class="header-status">
+            <div class="live-badge" id="liveBadge"><span class="live-dot"></span><span id="statusText">CONNECTING</span></div>
+            <div class="uptime-display">⏱ <span id="uptime">00:00:00</span></div>
+        </div>
+    </header>
+    <div class="stats-row">
+        <div class="stat-card"><div class="icon-bg">🧱</div><div class="label">Current Block</div><div class="value cyan" id="currentBlock">&mdash;</div><div class="footer">Chia blockchain height</div></div>
+        <div class="stat-card"><div class="icon-bg">📦</div><div class="label">Bundles Submitted</div><div class="value gold" id="bundlesSubmitted">0</div><div class="footer">Spend bundles sent</div></div>
+        <div class="stat-card" id="winCard"><div class="icon-bg">🏆</div><div class="label">Wins</div><div class="value emerald" id="wins">0</div><div class="footer">Confirmed mining wins</div></div>
+        <div class="stat-card"><div class="icon-bg">💰</div><div class="label">XKV8 Balance</div><div class="value fire" id="xkv8Balance">0.00</div><div class="footer">Token balance (on-chain)</div></div>
+    </div>
+    <div class="canvas-card"><canvas id="minerCanvas"></canvas><div class="canvas-overlay"></div></div>
+    <div class="main-grid">
+        <div class="card">
+            <div class="card-header"><h2>Fleet Status</h2><span class="badge" id="statusBadge">OFFLINE</span></div>
+            <div class="card-body">
+                <div class="detail-row"><span class="dl">Mining Address</span><span class="dv"><span class="address-truncate" id="miningAddress">&mdash;</span></span></div>
+                <div class="detail-row"><span class="dl">Active Miners</span><span class="dv highlight" id="minerCountDisplay">&mdash;</span></div>
+                <div class="detail-row"><span class="dl">Strategy</span><span class="dv" id="strategyDisplay">&mdash;</span></div>
+                <div class="detail-row"><span class="dl">Win Rate</span><span class="dv highlight" id="winRate">&mdash;</span></div>
+                <div class="detail-row"><span class="dl">Session Uptime</span><span class="dv" id="uptimeDetail">00:00:00</span></div>
+            </div>
+        </div>
+        <div class="card">
+            <div class="card-header"><h2>Recent Activity</h2><span class="badge" id="logCount">0 events</span></div>
+            <div class="card-body"><div class="log-list" id="logs"></div></div>
+        </div>
+    </div>
+</div>
+<script>
+// ── Particles ──
+(function(){const f=document.getElementById('particleField');for(let i=0;i<30;i++){const p=document.createElement('div');p.className='particle';p.style.left=Math.random()*100+'%';p.style.animationDuration=(8+Math.random()*16)+'s';p.style.animationDelay=(Math.random()*12)+'s';p.style.width=p.style.height=(1+Math.random()*2)+'px';if(Math.random()>0.6)p.style.background='#2bff88';f.appendChild(p)}})();
+
+// ── Canvas ──
+const canvas=document.getElementById('minerCanvas'),ctx=canvas.getContext('2d'),DPR=window.devicePixelRatio||1;
+let W,H;
+function resize(){const r=canvas.parentElement.getBoundingClientRect();W=r.width;H=340;canvas.width=W*DPR;canvas.height=H*DPR;canvas.style.width=W+'px';canvas.style.height=H+'px';ctx.setTransform(DPR,0,0,DPR,0,0)}
+resize();window.addEventListener('resize',resize);
+
+const GY=280,T=()=>Date.now()/1000;
+const stars=Array.from({length:60},()=>({x:Math.random()*1600,y:Math.random()*160,s:Math.random()*1.2+0.4,p:Math.random()*6.28}));
+const rocks=Array.from({length:22},()=>({x:20+Math.random()*1400,y:GY-3+Math.random()*25,w:8+Math.random()*30,h:6+Math.random()*14,sh:0.08+Math.random()*0.12,gem:Math.random()>0.7,gc:['#f5a623','#2bff88','#22d3ee','#ff6b2b'][Math.floor(Math.random()*4)]}));
+
+function drawScene(){
+    const g=ctx.createLinearGradient(0,0,0,H);g.addColorStop(0,'#03040a');g.addColorStop(0.35,'#06081a');g.addColorStop(1,'#0a0e1e');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
+    const t=T();
+    stars.forEach(s=>{ctx.fillStyle=`rgba(255,220,140,${0.2+0.25*Math.sin(t*1.5+s.p)})`;ctx.beginPath();ctx.arc(s.x%W,s.y,s.s,0,6.28);ctx.fill()});
+    for(let i=0;i<W;i+=50){const h=10+Math.sin(i*0.04)*15;ctx.fillStyle='rgba(12,10,22,0.85)';ctx.beginPath();ctx.moveTo(i-12,0);ctx.lineTo(i,h);ctx.lineTo(i+12,0);ctx.fill()}
+    const gg=ctx.createLinearGradient(0,GY-8,0,H);gg.addColorStop(0,'#18131e');gg.addColorStop(1,'#0c0912');ctx.fillStyle=gg;ctx.fillRect(0,GY-8,W,H-GY+8);
+    ctx.strokeStyle='rgba(245,166,35,0.08)';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(0,GY-8);ctx.lineTo(W,GY-8);ctx.stroke();
+    rocks.forEach(r=>{ctx.fillStyle=`rgba(255,255,255,${r.sh})`;ctx.beginPath();ctx.roundRect(r.x%W,r.y,r.w,r.h,2);ctx.fill();if(r.gem){ctx.fillStyle=r.gc;ctx.globalAlpha=0.4+0.3*Math.sin(t*2+r.x);ctx.beginPath();ctx.arc(r.x%W+r.w/2,r.y+r.h/2,2,0,6.28);ctx.fill();ctx.globalAlpha=1}});
+    [[W*0.15,60],[W*0.5,55],[W*0.82,65]].forEach(([lx,ly])=>{const lg=ctx.createRadialGradient(lx,ly,1,lx,ly,70);lg.addColorStop(0,'rgba(255,200,80,0.08)');lg.addColorStop(1,'transparent');ctx.fillStyle=lg;ctx.fillRect(lx-70,ly-70,140,140);ctx.fillStyle='#a08020';ctx.fillRect(lx-2,ly-6,4,9);ctx.fillStyle=`rgba(255,220,100,${0.6+0.3*Math.sin(t*4+lx)})`;ctx.fillRect(lx-1.5,ly-4,3,5)});
+}
+
+const R=(x,y,w,h,c)=>{ctx.fillStyle=c;ctx.fillRect(x,y,w,h)};
+const FACE_COLOR='#c8885a';
+const SKIN_VARIANTS=['#d4956a','#c88a5e','#c8885a','#c4805a','#d09870','#b88050','#e0a878','#c49060'];
+
+// ── Dynamic miner renderer from config ──
+let fleet=[];
+let minerScale=3;
+
+function darken(hex,amt){let r=parseInt(hex.slice(1,3),16)-amt,g=parseInt(hex.slice(3,5),16)-amt,b=parseInt(hex.slice(5,7),16)-amt;return'#'+[r,g,b].map(v=>Math.max(0,v).toString(16).padStart(2,'0')).join('')}
+
+function drawMiner(m,cx,t){
+    const s=minerScale;
+    const py=GY-28*s,px=cx-8*s;
+    const isSwing=m.action==='pickaxe';const isShov=m.action==='shovel';const isWalk=m.action==='wheelbarrow';
+    const cycle=isSwing?(t*1.2+cx*0.01)%1:(isShov?(t*0.8+cx*0.02)%1:(t*0.5+cx*0.005)%1);
+    const bob=isWalk?Math.sin(t*5+cx)*1.5:(cycle<0.5?0:Math.sin(cycle*6.28)*1.5);
+    ctx.fillStyle='rgba(0,0,0,0.2)';ctx.beginPath();ctx.ellipse(px+8*s,GY-1,10*s,2.5*s,0,0,6.28);ctx.fill();
+    let wx=0;if(isWalk){const wc=((t*0.35+cx*0.001)%2);wx=(wc<1?wc:2-wc)*40-20}
+    const mx=px+wx,my=py+bob;
+    const la=isWalk?Math.sin(t*5+cx)*3:0;
+    R(mx+2*s+la,my+20*s,4*s,8*s,'#2a2a4a');R(mx+9*s-la,my+20*s,4*s,8*s,'#2a2a4a');
+    R(mx+1*s+la,my+27*s,5*s,2.5*s,'#3a2820');R(mx+8*s-la,my+27*s,5*s,2.5*s,'#3a2820');
+    R(mx,my,16*s,20*s,m.shirt_color||'#3366cc');
+    R(mx,my+15*s,16*s,2.5*s,'#7a5510');
+    const face=m._face||FACE_COLOR;
+    R(mx+2*s,my-10*s,12*s,10*s,face);
+    // Traits
+    if(m.trait==='beard'){R(mx+2*s,my-1*s,12*s,4*s,'#5c3a1e');R(mx+3*s,my+3*s,10*s,2*s,'#4a2e15')}
+    else if(m.trait==='mustache'){R(mx+1*s,my-3*s,14*s,2.5*s,'#3a2810');R(mx+0,my-2*s,2.5*s,2.5*s,'#2e1e0a');R(mx+13.5*s,my-2*s,2.5*s,2.5*s,'#2e1e0a')}
+    else if(m.trait==='smudge'){ctx.fillStyle='rgba(40,30,20,0.4)';ctx.fillRect(mx+3*s,my-5*s,3*s,2.5*s);ctx.fillRect(mx+8*s,my-8*s,3*s,2*s);ctx.fillRect(mx+5*s,my-2*s,4*s,1.5*s)}
+    else if(m.trait==='bandana'){R(mx+1*s,my-11*s,14*s,3*s,'#cc2020');R(mx+13*s,my-10*s,4*s,1.5*s,'#cc2020')}
+    else if(m.trait==='scar'){ctx.strokeStyle='rgba(200,150,150,0.5)';ctx.lineWidth=1.2;ctx.beginPath();ctx.moveTo(mx+4*s,my-9*s);ctx.lineTo(mx+7*s,my-3*s);ctx.stroke()}
+    else if(m.trait==='goggles'){ctx.strokeStyle='#886630';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(mx+5*s,my-6*s,2*s,0,6.28);ctx.stroke();ctx.beginPath();ctx.arc(mx+11*s,my-6*s,2*s,0,6.28);ctx.stroke();ctx.beginPath();ctx.moveTo(mx+7*s,my-6*s);ctx.lineTo(mx+9*s,my-6*s);ctx.stroke();ctx.fillStyle='rgba(120,180,255,0.25)';ctx.beginPath();ctx.arc(mx+5*s,my-6*s,1.8*s,0,6.28);ctx.fill();ctx.beginPath();ctx.arc(mx+11*s,my-6*s,1.8*s,0,6.28);ctx.fill()}
+    else if(m.trait==='mohawk'){R(mx+5*s,my-14*s,6*s,3*s,'#cc3030');R(mx+6*s,my-17*s,4*s,3*s,'#aa2020')}
+    else if(m.trait==='eyepatch'){ctx.fillStyle='#222';ctx.fillRect(mx+3*s,my-9*s,4*s,3*s);ctx.strokeStyle='#444';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(mx+5*s,my-8*s);ctx.lineTo(mx+14*s,my-12*s);ctx.stroke()}
+    // Helmet
+    const hg=ctx.createLinearGradient(mx,my-13*s,mx,my-9*s);hg.addColorStop(0,m.helmet_color||'#e8922a');hg.addColorStop(1,darken(m.helmet_color||'#e8922a',30));
+    ctx.fillStyle=hg;ctx.fillRect(mx+1*s,my-13*s,14*s,4*s);R(mx+6*s,my-12*s,3*s,2.5*s,'#ddd');
+    R(mx+4*s,my-7*s,1.5*s,1.5*s,'#222');R(mx+10*s,my-7*s,1.5*s,1.5*s,'#222');
+    // Tool
+    if(isSwing){
+        let ang=-1.8;if(cycle>0.3&&cycle<0.7){const p=(cycle-0.3)/0.4;ang=p<0.5?-1.8+p*2*2.5:0.7-(p-0.5)*2*2.5}
+        ctx.save();ctx.translate(mx+8*s,my+3*s);ctx.rotate(ang);R(0,0,2*s,30*s,'#6b3a1f');
+        const pg=ctx.createLinearGradient(-6*s,27*s,6*s,27*s);pg.addColorStop(0,'#888');pg.addColorStop(0.5,'#ccc');pg.addColorStop(1,'#777');ctx.fillStyle=pg;ctx.fillRect(-6*s,27*s,14*s,4*s);ctx.restore();
+        if(cycle>0.48&&cycle<0.52){for(let i=0;i<6;i++){ctx.fillStyle=`rgba(255,${150+Math.random()*100},0,${0.5+Math.random()*0.5})`;ctx.fillRect(mx+40*s+(Math.random()-0.5)*20,GY-10+Math.random()*-15,2+Math.random()*2,2+Math.random()*2)}}
+    }else if(isShov){
+        let ang=0.2;if(cycle<0.4)ang=0.2+cycle/0.4*0.9;else if(cycle<0.6)ang=1.1;else ang=1.1-(cycle-0.6)/0.4*0.9;
+        ctx.save();ctx.translate(mx+10*s,my+6*s);ctx.rotate(ang);R(0,0,2*s,30*s,'#5a3518');R(-4*s,28*s,10*s,3*s,'#888');R(-3*s,30*s,8*s,2*s,'#aaa');ctx.restore();
+    }else{
+        const bx=mx+18*s,by=GY-14*s;
+        ctx.strokeStyle='#555';ctx.lineWidth=1.5;ctx.beginPath();ctx.arc(bx+5*s,GY-3,4*s,0,6.28);ctx.stroke();ctx.fillStyle='#333';ctx.beginPath();ctx.arc(bx+5*s,GY-3,3.5*s,0,6.28);ctx.fill();
+        R(bx-2*s,by,14*s,2*s,'#7a5525');R(bx-2*s,by-7*s,2*s,7*s,'#6a4820');R(bx+10*s,by-7*s,2*s,7*s,'#6a4820');R(bx-2*s,by-7*s,14*s,2*s,'#7a5525');
+        for(let i=0;i<3;i++){ctx.fillStyle=['#555','#666','#777'][i];ctx.beginPath();ctx.arc(bx+1*s+i*3.5*s,by-5*s,2*s,0,6.28);ctx.fill()}
+        ctx.strokeStyle='#5a3518';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(bx-1*s,by+1*s);ctx.lineTo(mx+10*s,my+8*s);ctx.stroke()
+    }
+    // Name label
+    ctx.fillStyle='rgba(255,255,255,0.3)';ctx.font="600 9px 'JetBrains Mono',monospace";ctx.textAlign='center';
+    ctx.fillText(m.name||'MINER',mx+8*s,GY+18);
+    if((m.instances||1)>1){
+        ctx.fillStyle='rgba(245,166,35,0.15)';const tw=ctx.measureText('×'+m.instances).width+8;
+        ctx.beginPath();ctx.roundRect(mx+8*s-tw/2,GY+22,tw,14,4);ctx.fill();
+        ctx.fillStyle='rgba(245,166,35,0.7)';ctx.font="700 8px 'JetBrains Mono',monospace";
+        ctx.fillText('×'+m.instances,mx+8*s,GY+32);
+    }
+}
+
+function animate(){
+    ctx.clearRect(0,0,W,H);drawScene();const t=T();
+    if(fleet.length>0){
+        const spacing=W/(fleet.length+1);
+        // Scale based on count
+        minerScale=fleet.length<=3?3:fleet.length<=6?2.2:1.8;
+        fleet.forEach((m,i)=>drawMiner(m,spacing*(i+1),t));
+    }
+    requestAnimationFrame(animate);
+}
+animate();
+
+// ── Load config and build fleet ──
+async function loadConfig(){
+    try{
+        const r=await fetch('/api/config');const cfg=await r.json();
+        fleet=cfg.miners||[];
+        // Assign face colors
+        fleet.forEach((m,i)=>{m._face=SKIN_VARIANTS[i%SKIN_VARIANTS.length]});
+        // Update header
+        const count=fleet.reduce((a,m)=>a+(m.instances||1),0);
+        document.getElementById('subtitleText').textContent=`FLEET OPERATIONS — ${count} MINER${count!==1?'S':''}`;
+        document.getElementById('minerCountDisplay').textContent=`${count} across ${fleet.length} machine${fleet.length!==1?'s':''}`;
+        // Strategy
+        const feePayers=fleet.filter(m=>m.fee_mojos>0);
+        const strat=feePayers.length>0?feePayers.map(m=>`${m.name}: ${(m.fee_mojos/1e6).toFixed(0)}M fee`).join(' | ')+' | rest: luck-only':'All luck-only (zero fee)';
+        document.getElementById('strategyDisplay').textContent=strat;
+    }catch(e){
+        console.error('Config load failed:',e);
+        document.getElementById('subtitleText').textContent='FLEET OPERATIONS';
+    }
+}
+loadConfig();
+
+// ── Data polling ──
+let startTime=Date.now(),logCount=0,lastWins=0;
+function fmt(ms){const s=Math.floor(ms/1000);return`${String(Math.floor(s/3600)).padStart(2,'0')}:${String(Math.floor((s%3600)/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
+
+async function fetchData(){
+    try{
+        const r=await fetch('/api/status');const d=await r.json();
+        document.getElementById('currentBlock').textContent=d.currentBlock?d.currentBlock.toLocaleString():'—';
+        document.getElementById('bundlesSubmitted').textContent=d.bundlesSubmitted||0;
+        document.getElementById('wins').textContent=d.wins||0;
+        document.getElementById('xkv8Balance').textContent=(d.xkv8Balance||0).toFixed(2);
+        document.getElementById('miningAddress').textContent=d.miningAddress||'—';
+        const b=d.bundlesSubmitted||0,w=d.wins||0;
+        document.getElementById('winRate').textContent=b>0?(w/b*100).toFixed(1)+'%':'—';
+        const badge=document.getElementById('liveBadge'),st=document.getElementById('statusText'),sb=document.getElementById('statusBadge');
+        if(d.isGrinding||d.status==='MINING'){badge.className='live-badge';st.textContent='MINING';sb.textContent='ACTIVE'}
+        else if(d.status==='ACTIVE'||d.status==='ONLINE'){badge.className='live-badge';st.textContent=d.status;sb.textContent=d.status}
+        else{badge.className='live-badge offline';st.textContent=d.status||'OFFLINE';sb.textContent=d.status||'OFFLINE'}
+        if(d.wins>lastWins&&lastWins>0){document.getElementById('winCard').classList.add('win-flash');setTimeout(()=>document.getElementById('winCard').classList.remove('win-flash'),800)}
+        lastWins=d.wins||0;
+        const ut=fmt(Date.now()-startTime);document.getElementById('uptime').textContent=ut;document.getElementById('uptimeDetail').textContent=ut;
+        if(d.lastActivity)addLog(d.lastActivity);
+    }catch(e){document.getElementById('liveBadge').className='live-badge offline';document.getElementById('statusText').textContent='OFFLINE'}
+}
+function addLog(msg){
+    const logs=document.getElementById('logs');
+    if(logs.firstChild&&logs.firstChild.querySelector&&logs.firstChild.querySelector('.log-msg')){if(logs.firstChild.querySelector('.log-msg').textContent===msg)return}
+    const item=document.createElement('div');item.className='log-item';
+    let dc='log-dot';if(msg.toLowerCase().includes('win')||msg.toLowerCase().includes('success'))dc+=' success';else if(msg.toLowerCase().includes('error')||msg.toLowerCase().includes('fail'))dc+=' error';
+    item.innerHTML=`<div class="${dc}"></div><div class="log-content"><div class="log-msg">${msg}</div><div class="log-time">${new Date().toLocaleTimeString()}</div></div>`;
+    logs.insertBefore(item,logs.firstChild);logCount++;document.getElementById('logCount').textContent=logCount+' events';
+    while(logs.children.length>15)logs.removeChild(logs.lastChild)
+}
+setInterval(fetchData,1000);fetchData();addLog('Dashboard initialized');
+</script>
+</body>
+</html>
