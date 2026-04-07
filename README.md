@@ -28,8 +28,8 @@ Track your miners, watch on-chain balance update with each win, and give your mi
 ### Install
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/xkv8-dashboard.git
-cd xkv8-dashboard
+git clone https://github.com/FlipThisCrypto/XKV8-Dashboard.git
+cd XKV8-Dashboard
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
